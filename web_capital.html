@@ -79,6 +79,10 @@
       .flag { width: 90%; }
     }
   </style>
+  
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#121212" />
+
 </head>
 <body>
   <h1>🌍 Adivina la Capital - Europa</h1>
@@ -190,6 +194,15 @@
 
     document.getElementById("lang").addEventListener("change", initGame);
     window.onload = loadCountries;
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registrado', reg))
+        .catch(err => console.log('Error registrando Service Worker', err));
+    });
+  }
   </script>
 </body>
 </html>
