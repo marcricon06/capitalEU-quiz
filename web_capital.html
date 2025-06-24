@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌍 Adivina la Capital de Europa</title>
+  <title>🌍 Guess the Capital of Europe</title>
   <meta name="description" content="Pon a prueba tus conocimientos de geografía: cada día una bandera de Europa, ¡adivina su capital!" />
   <meta name="keywords" content="capitales, europa, banderas, quiz, geografía, juego educativo, capitales europeas" />
   <meta name="author" content="Europe Flag Quiz" />
@@ -115,6 +115,14 @@
       placeholder: { es: "Escribe la capital", en: "Enter the capital", de: "Gib die Hauptstadt ein", fr: "Entrez la capitale", it: "Inserisci la capitale", ca: "Escriu la capital" },
       button: { es: "Comprobar", en: "Check", de: "Prüfen", fr: "Vérifier", it: "Verifica", ca: "Comprova" }
     };
+    const titles = {
+  es: "🌍 Adivina la Capital de Europa",
+  en: "🌍 Guess the Capital of Europe",
+  de: "🌍 Errate die Hauptstadt Europas",
+  fr: "🌍 Devinez la capitale de l'Europe",
+  it: "🌍 Indovina la capitale d'Europa",
+  ca: "🌍 Endevina la capital d'Europa"
+};
 
     async function loadCountries() {
       const res = await fetch("https://restcountries.com/v3.1/region/europe");
@@ -140,21 +148,23 @@
     }
 
     function initGame() {
-      const lang = document.getElementById("lang").value;
-      const country = getCountryOfTheDay();
+  const lang = document.getElementById("lang").value;
+  const country = getCountryOfTheDay();
 
-      document.getElementById("flag").src = country.flags.svg;
-      document.getElementById("flag").alt = `Bandera de ${country.name.common}`;
+  document.getElementById("flag").src = country.flags.svg;
+  document.getElementById("flag").alt = `Bandera de ${country.name.common}`;
 
-      document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
-      document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
-      document.getElementById("checkBtn").textContent = translations.button[lang];
+  document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
+  document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
+  document.getElementById("checkBtn").textContent = translations.button[lang];
 
-      document.getElementById("result").textContent = "";
-      document.getElementById("capitalInput").value = "";
+  document.title = titles[lang] || titles.en;  // Aquí actualizamos el título
 
-      updateScore();
-    }
+  document.getElementById("result").textContent = "";
+  document.getElementById("capitalInput").value = "";
+
+  updateScore();
+}
 
     function checkAnswer() {
       const lang = document.getElementById("lang").value;
