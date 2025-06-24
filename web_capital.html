@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌍 Adivina la Capital de Europa</title>
+  <meta name="description" content="Pon a prueba tus conocimientos de geografía: cada día una bandera de Europa, ¡adivina su capital!" />
+  <meta name="keywords" content="capitales, europa, banderas, quiz, geografía, juego educativo, capitales europeas" />
+  <meta name="author" content="Europe Flag Quiz" />
+  <meta property="og:title" content="🌍 Adivina la Capital de Europa" />
+  <meta property="og:description" content="¿Reconoces todas las capitales de Europa por su bandera? ¡Juega cada día!" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/preview.jpg" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #121212;
+      color: #f0f0f0;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      color: #90caf9;
+      animation: fadeIn 1s ease-out;
+    }
+    .flag {
+      width: 80%;
+      max-width: 300px;
+      height: auto;
+      margin: 1rem auto;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+      border-radius: 10px;
+    }
+    input, button, select {
+      padding: 0.7rem;
+      font-size: 1.1rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+    input {
+      width: 250px;
+    }
+    button {
+      background: linear-gradient(135deg, #2196f3, #1e88e5);
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #1976d2, #1565c0);
+    }
+    select {
+      background: #333;
+      color: #fff;
+    }
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 1.3rem;
+      transition: all 0.3s ease-in-out;
+    }
+    .score {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: #81c784;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      input { width: 80%; }
+      .flag { width: 90%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 Adivina la Capital - Europa</h1>
+  <div class="score" id="scoreDisplay">Puntos: 0</div>
+  <div>
+    <label for="lang">Idioma:</label>
+    <select id="lang">
+      <option value="es">Español</option>
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+      <option value="fr">Français</option>
+      <option value="it">Italiano</option>
+      <option value="ca">Català</option>
+    </select>
+  </div>
+  <img id="flag" class="flag" src="" alt="Bandera de hoy" />
+  <div>
+    <p id="prompt"></p>
+    <input type="text" id="capitalInput" placeholder="" />
+    <button id="checkBtn" onclick="checkAnswer()"></button>
+  </div>
+  <div class="result" id="result"></div>
+
+  <script>
+    let countries = [];
+    const translations = {
+      prompt: { es: "¿Cuál es la capital de", en: "What's the capital of", de: "Wie heißt die Hauptstadt von", fr: "Quelle est la capitale de", it: "Qual è la capitale di", ca: "Quina és la capital de" },
+      correct: { es: "✅ ¡Correcto!", en: "✅ Correct!", de: "✅ Richtig!", fr: "✅ Correct!", it: "✅ Corretto!", ca: "✅ Correcte!" },
+      incorrect: { es: "❌ Incorrecto. La capital de", en: "❌ Incorrect. The capital of", de: "❌ Falsch. Die Hauptstadt von", fr: "❌ Incorrect. La capitale de", it: "❌ Sbagliato. La capitale di", ca: "❌ Incorrecte. La capital de" },
+      placeholder: { es: "Escribe la capital", en: "Enter the capital", de: "Gib die Hauptstadt ein", fr: "Entrez la capitale", it: "Inserisci la capitale", ca: "Escriu la capital" },
+      button: { es: "Comprobar", en: "Check", de: "Prüfen", fr: "Vérifier", it: "Verifica", ca: "Comprova" }
+    };
+
+    async function loadCountries() {
+      const res = await fetch("https://restcountries.com/v3.1/region/europe");
+      const data = await res.json();
+      countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
+      initGame();
+    }
+
+    function getTodayKey() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    }
+
+    function getCountryOfTheDay() {
+      const today = new Date();
+      const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+      return countries[dayOfYear % countries.length];
+    }
+
+    function translateCountry(country, lang) {
+      if (lang === "ca") return country.translations.spa?.common || country.name.common;
+      return country.translations[lang]?.common || country.name.common;
+    }
+
+    function initGame() {
+      const lang = document.getElementById("lang").value;
+      const country = getCountryOfTheDay();
+
+      document.getElementById("flag").src = country.flags.svg;
+      document.getElementById("flag").alt = `Bandera de ${country.name.common}`;
+
+      document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
+      document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
+      document.getElementById("checkBtn").textContent = translations.button[lang];
+
+      document.getElementById("result").textContent = "";
+      document.getElementById("capitalInput").value = "";
+
+      updateScore();
+    }
+
+    function checkAnswer() {
+      const lang = document.getElementById("lang").value;
+      const key = getTodayKey();
+      const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
+
+      if (history[key]) return;
+
+      const country = getCountryOfTheDay();
+      const input = document.getElementById("capitalInput").value.trim().toLowerCase();
+      const correct = country.capital[0].toLowerCase();
+      const result = document.getElementById("result");
+
+      if (input === correct) {
+        result.textContent = translations.correct[lang];
+        result.style.color = "#4caf50";
+        addPoint();
+      } else {
+        result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
+        result.style.color = "#ef5350";
+      }
+
+      history[key] = true;
+      localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+    }
+
+    function addPoint() {
+      const score = parseInt(localStorage.getItem("capitalScore") || "0", 10) + 1;
+      localStorage.setItem("capitalScore", score);
+      updateScore();
+    }
+
+    function updateScore() {
+      const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
+      document.getElementById("scoreDisplay").textContent = `Puntos: ${score}`;
+    }
+
+    document.getElementById("lang").addEventListener("change", initGame);
+    window.onload = loadCountries;
+  </script>
+</body>
+</html>
