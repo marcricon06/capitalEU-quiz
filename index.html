@@ -458,48 +458,102 @@ function updateUI() {
   document.getElementById("scoreDisplay").textContent = translations.score[lang] + score;
 }
 
+    const importantCities = {
+  "Albania": ["Tirana", "Durrës", "Vlorë", "Shkodër", "Fier"],
+  "Andorra": ["Andorra la Vella", "Escaldes-Engordany", "Encamp", "Sant Julià de Lòria", "La Massana"],
+  "Austria": ["Vienna", "Graz", "Linz", "Salzburg", "Innsbruck"],
+  "Belarus": ["Minsk", "Gomel", "Mogilev", "Vitebsk", "Hrodna"],
+  "Belgium": ["Brussels", "Antwerp", "Ghent", "Charleroi", "Liège"],
+  "Bosnia and Herzegovina": ["Sarajevo", "Banja Luka", "Tuzla", "Zenica", "Mostar"],
+  "Bulgaria": ["Sofia", "Plovdiv", "Varna", "Burgas", "Ruse"],
+  "Croatia": ["Zagreb", "Split", "Rijeka", "Osijek", "Zadar"],
+  "Cyprus": ["Nicosia", "Limassol", "Larnaca", "Famagusta", "Paphos"],
+  "Czechia": ["Prague", "Brno", "Ostrava", "Plzeň", "Liberec"],
+  "Denmark": ["Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg"],
+  "Estonia": ["Tallinn", "Tartu", "Narva", "Pärnu", "Kohtla-Järve"],
+  "Finland": ["Helsinki", "Espoo", "Tampere", "Vantaa", "Oulu"],
+  "France": ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"],
+  "Germany": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt"],
+  "Greece": ["Athens", "Thessaloniki", "Patras", "Heraklion", "Larissa"],
+  "Hungary": ["Budapest", "Debrecen", "Szeged", "Miskolc", "Pécs"],
+  "Iceland": ["Reykjavik", "Kopavogur", "Hafnarfjordur", "Akureyri", "Reykjanesbaer"],
+  "Ireland": ["Dublin", "Cork", "Limerick", "Galway", "Waterford"],
+  "Italy": ["Rome", "Milan", "Naples", "Turin", "Palermo"],
+  "Kosovo": ["Pristina", "Prizren", "Peja", "Gjilan", "Mitrovica"],
+  "Latvia": ["Riga", "Daugavpils", "Liepaja", "Jelgava", "Jurmala"],
+  "Lithuania": ["Vilnius", "Kaunas", "Klaipeda", "Siauliai", "Panevezys"],
+  "Luxembourg": ["Luxembourg", "Esch-sur-Alzette", "Differdange", "Dudelange", "Ettelbruck"],
+  "Malta": ["Valletta", "Birkirkara", "Mosta", "Qormi", "Sliema"],
+  "Moldova": ["Chișinău", "Tiraspol", "Bălți", "Bender", "Rîbnița"],
+  "Monaco": ["Monaco", "Monte Carlo", "La Condamine", "Fontvieille", "Moneghetti"],
+  "Montenegro": ["Podgorica", "Nikšić", "Herceg Novi", "Pljevlja", "Bijelo Polje"],
+  "Netherlands": ["Amsterdam", "Rotterdam", "The Hague", "Utrecht", "Eindhoven"],
+  "North Macedonia": ["Skopje", "Bitola", "Kumanovo", "Prilep", "Tetovo"],
+  "Norway": ["Oslo", "Bergen", "Trondheim", "Stavanger", "Tromsø"],
+  "Poland": ["Warsaw", "Kraków", "Łódź", "Wrocław", "Poznań"],
+  "Portugal": ["Lisbon", "Porto", "Vila Nova de Gaia", "Amadora", "Braga"],
+  "Romania": ["Bucharest", "Cluj-Napoca", "Timișoara", "Iași", "Constanța"],
+  "Russia": ["Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Nizhny Novgorod"],
+  "San Marino": ["San Marino", "Serravalle", "Borgo Maggiore", "Domagnano", "Faetano"],
+  "Serbia": ["Belgrade", "Novi Sad", "Niš", "Kragujevac", "Subotica"],
+  "Slovakia": ["Bratislava", "Košice", "Prešov", "Žilina", "Nitra"],
+  "Slovenia": ["Ljubljana", "Maribor", "Celje", "Kranj", "Velenje"],
+  "Spain": ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"],
+  "Sweden": ["Stockholm", "Gothenburg", "Malmö", "Uppsala", "Västerås"],
+  "Switzerland": ["Bern", "Zurich", "Geneva", "Basel", "Lausanne"],
+  "Turkey": ["Ankara", "Istanbul", "Izmir", "Bursa", "Adana"],
+  "Ukraine": ["Kyiv", "Kharkiv", "Odesa", "Dnipro", "Donetsk"],
+  "United Kingdom": ["London", "Birmingham", "Manchester", "Glasgow", "Liverpool"],
+  "Vatican City": ["Vatican City"]
+};
 
     function setupAutocomplete() {
-      const input = document.getElementById("capitalInput");
-      const suggestionBox = document.getElementById("suggestions");
+  const input = document.getElementById("capitalInput");
+  const suggestionBox = document.getElementById("suggestions");
 
-      input.addEventListener("input", () => {
-        const query = input.value.toLowerCase();
+  input.addEventListener("input", () => {
+    const query = input.value.toLowerCase();
+    suggestionBox.innerHTML = "";
+
+    if (!query) return;
+
+    let cityList = [];
+
+    countries.forEach(c => {
+      // Agrega capital si existe
+      if (c.capital && c.capital[0]) {
+        cityList.push(c.capital[0]);
+      }
+
+      // Agrega ciudades importantes si hay
+      const cities = importantCities[c.name.common];
+      if (cities) {
+        cityList = cityList.concat(cities);
+      }
+    });
+
+    // Filtra sin duplicados y que empiecen con el query
+    const matches = cityList
+      .filter(city => city.toLowerCase().startsWith(query))
+      .filter((city, index, self) => self.indexOf(city) === index)
+      .slice(0, 5);
+
+    matches.forEach(city => {
+      const div = document.createElement("div");
+      div.className = "suggestion";
+      div.textContent = city;
+      div.addEventListener("click", () => {
+        input.value = city;
         suggestionBox.innerHTML = "";
-
-        if (!query) return;
-
-        const matches = countries
-          .map(c => c.capital[0])
-          .filter(cap => cap.toLowerCase().startsWith(query))
-          .slice(0, 5); 
-
-        matches.forEach(cap => {
-          const div = document.createElement("div");
-          div.className = "suggestion";
-          div.textContent = cap;
-          div.addEventListener("click", () => {
-            input.value = cap;
-            suggestionBox.innerHTML = "";
-          });
-          suggestionBox.appendChild(div);
-        });
       });
-
-      document.addEventListener("click", e => {
-        if (e.target !== input) suggestionBox.innerHTML = "";
-      });
-    }
-
-    // Evento para cerrar el historial
-    document.getElementById("closeStatsBtn").addEventListener("click", () => {
-      document.getElementById("statsDisplay").style.display = "none";
+      suggestionBox.appendChild(div);
     });
+  });
 
-    // Actualiza idioma al cambiar selección
-    document.getElementById("lang").addEventListener("change", () => {
-      updateUI();
-    });
+  document.addEventListener("click", e => {
+    if (e.target !== input) suggestionBox.innerHTML = "";
+  });
+}
 
     loadCountries();
   </script>
