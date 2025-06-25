@@ -310,37 +310,26 @@
     ca: "Intent 3",
   },
 };
-    function updateUI() {
+   // Función que actualiza todos los textos en base al idioma seleccionado
+function updateUI() {
   const lang = document.getElementById("lang").value;
   const country = getCountryOfTheDay();
-  const stats = loadStats();
-  const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
 
-  // Título y encabezado
-  document.title = titles[lang] || titles.en;
-  document.querySelector("h1").textContent = titles[lang] || titles.en;
-
-  // Pregunta y entrada
   document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
   document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
   document.getElementById("checkBtn").textContent = translations.button[lang];
 
-  // Puntaje y intentos
-  document.getElementById("scoreDisplay").textContent = translations.score[lang] + score;
-  document.getElementById("attemptsDisplay").textContent = translations.attempts[lang] + attemptsLeft;
-
-  // Historial
-  const statsDisplay = document.getElementById("statsDisplay");
-  statsDisplay.innerHTML = `
-    <h3>${translations.statsTitle[lang]}</h3>
-    <div id="statsContent">
-      <p>${translations.attempt1[lang]}: ${stats["1"] || 0}</p>
-      <p>${translations.attempt2[lang]}: ${stats["2"] || 0}</p>
-      <p>${translations.attempt3[lang]}: ${stats["3"] || 0}</p>
-    </div>
-  `;
+  document.title = titles[lang] || titles.en;
+  document.querySelector("h1").textContent = titles[lang] || titles.en;
+  document.getElementById("scoreDisplay").textContent = `Puntos: ${localStorage.getItem("capitalScore") || 0}`;
+  document.getElementById("attemptsDisplay").textContent = `Intentos restantes: ${attemptsLeft}`;
 }
-document.getElementById("lang").addEventListener("change", updateUI);
+
+// Asignar evento de cambio de idioma
+document.getElementById("lang").addEventListener("change", () => {
+  initGame();
+  updateUI();
+});
 
     function initGame() {
       const lang = document.getElementById("lang").value;
