@@ -482,6 +482,24 @@ function updateUI() {
     document.getElementById("lang").addEventListener("change", () => {
       updateUI();
     });
+  
+  let currentDateKey = getTodayKey();
+
+  // Verifica cada minuto si ha cambiado el día
+  setInterval(() => {
+    const newDateKey = getTodayKey();
+    if (newDateKey !== currentDateKey) {
+      currentDateKey = newDateKey;
+
+      // Limpia estado para el nuevo día
+      attemptsLeft = 3;
+      document.getElementById("capitalInput").disabled = false;
+      document.getElementById("checkBtn").disabled = false;
+      localStorage.removeItem("capitalGameHistory");
+
+      initGame(); // Reinicia el juego con el nuevo país
+    }
+  }, 60000); // cada 60 segundos
 
     loadCountries();
   </script>
