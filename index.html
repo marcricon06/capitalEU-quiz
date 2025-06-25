@@ -239,7 +239,7 @@ function updateStatsDisplay() {
   if (input === correct) {
     result.textContent = translations.correct[lang];
     result.style.color = "#4caf50";
-
+    addPoint();
     
     let stats = loadStats();
     stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
