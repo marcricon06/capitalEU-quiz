@@ -78,6 +78,27 @@
       input { width: 80%; }
       .flag { width: 90%; }
     }
+    #suggestions {
+  max-width: 250px;
+  margin: 0 auto;
+  text-align: left;
+  background: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.suggestion {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background: #333;
+}
+
   </style>
   
   <link rel="manifest" href="manifest.json" />
@@ -102,6 +123,7 @@
   <div>
     <p id="prompt"></p>
     <input type="text" id="capitalInput" placeholder="" />
+    <div id="suggestions" style="position: relative; z-index: 10;"></div>
     <button id="checkBtn" onclick="checkAnswer()"></button>
   </div>
   <div class="result" id="result"></div>
@@ -124,12 +146,14 @@
   ca: "🌍 Endevina la capital d'Europa"
 };
 
-    async function loadCountries() {
-      const res = await fetch("https://restcountries.com/v3.1/region/europe");
-      const data = await res.json();
-      countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
-      initGame();
-    }
+   async function loadCountries() {
+  const res = await fetch("https://restcountries.com/v3.1/region/europe");
+  const data = await res.json();
+  countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
+  initGame();
+  setupAutocomplete(); 
+}
+
 
     function getTodayKey() {
       const today = new Date();
@@ -203,6 +227,39 @@
       const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
       document.getElementById("scoreDisplay").textContent = `Puntos: ${score}`;
     }
+    function setupAutocomplete() {
+  const input = document.getElementById("capitalInput");
+  const suggestionBox = document.getElementById("suggestions");
+
+  input.addEventListener("input", () => {
+    const query = input.value.toLowerCase();
+    suggestionBox.innerHTML = "";
+
+    if (!query) return;
+
+    const matches = countries
+      .map(c => c.capital[0])
+      .filter(cap => cap.toLowerCase().startsWith(query))
+      .slice(0, 5); 
+
+    matches.forEach(cap => {
+      const div = document.createElement("div");
+      div.className = "suggestion";
+      div.textContent = cap;
+      div.addEventListener("click", () => {
+        input.value = cap;
+        suggestionBox.innerHTML = "";
+      });
+      suggestionBox.appendChild(div);
+    });
+  });
+
+  document.addEventListener("click", e => {
+    if (!suggestionBox.contains(e.target) && e.target !== input) {
+      suggestionBox.innerHTML = "";
+    }
+  });
+}
 
     document.getElementById("lang").addEventListener("change", initGame);
     window.onload = loadCountries;
