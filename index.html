@@ -383,60 +383,68 @@ function updateUI() {
     }
 
     function checkAnswer() {
-      const lang = document.getElementById("lang").value;
-      const key = getTodayKey();
-      const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
+  const lang = document.getElementById("lang").value;
+  const key = getTodayKey();
+  const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
+  const result = document.getElementById("result");
 
-      if (history[key]) return;
+  // Si ya jugaste hoy, muestra mensaje y bloquea
+  if (history[key]) {
+    result.textContent = "Ya has jugado hoy. Vuelve mañana para intentarlo de nuevo.";
+    result.style.color = "#ffb74d"; // color naranja para aviso
+    document.getElementById("capitalInput").disabled = true;
+    document.getElementById("checkBtn").disabled = true;
+    return;
+  }
 
-      const country = getCountryOfTheDay();
-      const input = document.getElementById("capitalInput").value.trim().toLowerCase();
-      const correct = country.capital[0].toLowerCase();
-      const result = document.getElementById("result");
+  const country = getCountryOfTheDay();
+  const input = document.getElementById("capitalInput").value.trim().toLowerCase();
+  const correct = country.capital[0].toLowerCase();
 
-      if (input === correct) {
-        result.textContent = translations.correct[lang];
-        result.style.color = "#4caf50";
+  if (input === correct) {
+    result.textContent = translations.correct[lang];
+    result.style.color = "#4caf50";
 
-        let stats = loadStats();
-        stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
-        saveStats(stats);
-        updateStatsDisplay();
+    let stats = loadStats();
+    stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
+    saveStats(stats);
+    updateStatsDisplay();
 
-        history[key] = true; 
-        localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+    history[key] = true;
+    localStorage.setItem("capitalGameHistory", JSON.stringify(history));
 
-        document.getElementById("capitalInput").disabled = true;
-        document.getElementById("checkBtn").disabled = true;
+    document.getElementById("capitalInput").disabled = true;
+    document.getElementById("checkBtn").disabled = true;
 
-        document.getElementById("statsDisplay").style.display = "block";
+    document.getElementById("statsDisplay").style.display = "block";
 
-        addPoint();
+    addPoint();
 
-      } else {
-        attemptsLeft--;
+  } else {
+    attemptsLeft--;
 
-        if (attemptsLeft > 0) {
-          result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)}. Intenta de nuevo.`;
-          result.style.color = "#ef5350";
-          updateAttempts();
+    if (attemptsLeft > 0) {
+      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)}. Intenta de nuevo.`;
+      result.style.color = "#ef5350";
+      updateAttempts();
 
-        } else {
-          result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
-          result.style.color = "#ef5350";
+    } else {
+      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
+      result.style.color = "#ef5350";
 
-          history[key] = true; 
-          localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+      history[key] = true;
+      localStorage.setItem("capitalGameHistory", JSON.stringify(history));
 
-          updateAttempts();
+      updateAttempts();
 
-          document.getElementById("capitalInput").disabled = true;
-          document.getElementById("checkBtn").disabled = true;
+      document.getElementById("capitalInput").disabled = true;
+      document.getElementById("checkBtn").disabled = true;
 
-          document.getElementById("statsDisplay").style.display = "block";
-        }
-      }
+      document.getElementById("statsDisplay").style.display = "block";
     }
+  }
+}
+
 
     function addPoint() {
       const score = parseInt(localStorage.getItem("capitalScore") || "0", 10) + 1;
