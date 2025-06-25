@@ -158,13 +158,15 @@
   document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
   document.getElementById("checkBtn").textContent = translations.button[lang];
 
-  document.title = titles[lang] || titles.en;  // Aquí actualizamos el título
+  document.title = titles[lang] || titles.en;
+  document.querySelector("h1").textContent = titles[lang] || titles.en; // 🔁 Aquí lo agregas
 
   document.getElementById("result").textContent = "";
   document.getElementById("capitalInput").value = "";
 
   updateScore();
 }
+
 
     function checkAnswer() {
       const lang = document.getElementById("lang").value;
