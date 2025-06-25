@@ -199,8 +199,10 @@
     }
 
     function updateAttempts() {
-      document.getElementById("attemptsDisplay").textContent = `Intentos restantes: ${attemptsLeft}`;
-    }
+  const lang = document.getElementById("lang").value;
+  document.getElementById("attemptsDisplay").textContent = translations.attempts[lang] + attemptsLeft;
+}
+
 
     function loadStats() {
       return JSON.parse(localStorage.getItem("capitalAttemptsStats") || '{"1":0,"2":0,"3":0}');
@@ -218,6 +220,127 @@
         <p>Intento 3: ${stats["3"]}</p>
       `;
     }
+    const translations = {
+  prompt: {
+    es: "¿Cuál es la capital de",
+    en: "What's the capital of",
+    de: "Wie heißt die Hauptstadt von",
+    fr: "Quelle est la capitale de",
+    it: "Qual è la capitale di",
+    ca: "Quina és la capital de",
+  },
+  correct: {
+    es: "✅ ¡Correcto!",
+    en: "✅ Correct!",
+    de: "✅ Richtig!",
+    fr: "✅ Correct!",
+    it: "✅ Corretto!",
+    ca: "✅ Correcte!",
+  },
+  incorrect: {
+    es: "❌ Incorrecto. La capital de",
+    en: "❌ Incorrect. The capital of",
+    de: "❌ Falsch. Die Hauptstadt von",
+    fr: "❌ Incorrect. La capitale de",
+    it: "❌ Sbagliato. La capitale di",
+    ca: "❌ Incorrecte. La capital de",
+  },
+  placeholder: {
+    es: "Escribe la capital",
+    en: "Enter the capital",
+    de: "Gib die Hauptstadt ein",
+    fr: "Entrez la capitale",
+    it: "Inserisci la capitale",
+    ca: "Escriu la capital",
+  },
+  button: {
+    es: "Comprobar",
+    en: "Check",
+    de: "Prüfen",
+    fr: "Vérifier",
+    it: "Verifica",
+    ca: "Comprova",
+  },
+  score: {
+    es: "Puntos: ",
+    en: "Score: ",
+    de: "Punkte: ",
+    fr: "Points: ",
+    it: "Punti: ",
+    ca: "Punts: ",
+  },
+  attempts: {
+    es: "Intentos restantes: ",
+    en: "Attempts left: ",
+    de: "Versuche übrig: ",
+    fr: "Essais restants: ",
+    it: "Tentativi rimasti: ",
+    ca: "Intents restants: ",
+  },
+  statsTitle: {
+    es: "Historial de aciertos",
+    en: "Success History",
+    de: "Erfolgsverlauf",
+    fr: "Historique des succès",
+    it: "Storico successi",
+    ca: "Historial d'encerts",
+  },
+  attempt1: {
+    es: "Intento 1",
+    en: "Attempt 1",
+    de: "Versuch 1",
+    fr: "Essai 1",
+    it: "Tentativo 1",
+    ca: "Intent 1",
+  },
+  attempt2: {
+    es: "Intento 2",
+    en: "Attempt 2",
+    de: "Versuch 2",
+    fr: "Essai 2",
+    it: "Tentativo 2",
+    ca: "Intent 2",
+  },
+  attempt3: {
+    es: "Intento 3",
+    en: "Attempt 3",
+    de: "Versuch 3",
+    fr: "Essai 3",
+    it: "Tentativo 3",
+    ca: "Intent 3",
+  },
+};
+    function updateUI() {
+  const lang = document.getElementById("lang").value;
+  const country = getCountryOfTheDay();
+  const stats = loadStats();
+  const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
+
+  // Título y encabezado
+  document.title = titles[lang] || titles.en;
+  document.querySelector("h1").textContent = titles[lang] || titles.en;
+
+  // Pregunta y entrada
+  document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
+  document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
+  document.getElementById("checkBtn").textContent = translations.button[lang];
+
+  // Puntaje y intentos
+  document.getElementById("scoreDisplay").textContent = translations.score[lang] + score;
+  document.getElementById("attemptsDisplay").textContent = translations.attempts[lang] + attemptsLeft;
+
+  // Historial
+  const statsDisplay = document.getElementById("statsDisplay");
+  statsDisplay.innerHTML = `
+    <h3>${translations.statsTitle[lang]}</h3>
+    <div id="statsContent">
+      <p>${translations.attempt1[lang]}: ${stats["1"] || 0}</p>
+      <p>${translations.attempt2[lang]}: ${stats["2"] || 0}</p>
+      <p>${translations.attempt3[lang]}: ${stats["3"] || 0}</p>
+    </div>
+  `;
+}
+document.getElementById("lang").addEventListener("change", updateUI);
 
     function initGame() {
       const lang = document.getElementById("lang").value;
@@ -243,7 +366,7 @@
       document.getElementById("checkBtn").disabled = false;
 
       document.getElementById("statsDisplay").style.display = "none";
-
+      updateUI();
       updateScore();
     }
 
