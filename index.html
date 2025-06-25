@@ -157,14 +157,6 @@
     let countries = [];
     let attemptsLeft = 3;
 
-    const translations = {
-      prompt: { es: "¿Cuál es la capital de", en: "What's the capital of", de: "Wie heißt die Hauptstadt von", fr: "Quelle est la capitale de", it: "Qual è la capitale di", ca: "Quina és la capital de" },
-      correct: { es: "✅ ¡Correcto!", en: "✅ Correct!", de: "✅ Richtig!", fr: "✅ Correct!", it: "✅ Corretto!", ca: "✅ Correcte!" },
-      incorrect: { es: "❌ Incorrecto. La capital de", en: "❌ Incorrect. The capital of", de: "❌ Falsch. Die Hauptstadt von", fr: "❌ Incorrect. La capitale de", it: "❌ Sbagliato. La capitale di", ca: "❌ Incorrecte. La capital de" },
-      placeholder: { es: "Escribe la capital", en: "Enter the capital", de: "Gib die Hauptstadt ein", fr: "Entrez la capitale", it: "Inserisci la capitale", ca: "Escriu la capital" },
-      button: { es: "Comprobar", en: "Check", de: "Prüfen", fr: "Vérifier", it: "Verifica", ca: "Comprova" }
-    };
-
     const titles = {
       es: "🌍 Adivina la Capital de Europa",
       en: "🌍 Guess the Capital of Europe",
@@ -175,12 +167,16 @@
     };
 
     async function loadCountries() {
-      const res = await fetch("https://restcountries.com/v3.1/region/europe");
-      const data = await res.json();
-      countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
-      initGame();
-      setupAutocomplete(); 
-    }
+  try {
+    const res = await fetch("https://restcountries.com/v3.1/region/europe");
+    const data = await res.json();
+    countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
+    initGame();  // Solo después de tener los datos
+  } catch (e) {
+    console.error("Error cargando países:", e);
+  }
+}
+
 
     function getTodayKey() {
       const today = new Date();
@@ -202,6 +198,7 @@
   const lang = document.getElementById("lang").value;
   document.getElementById("attemptsDisplay").textContent = translations.attempts[lang] + attemptsLeft;
 }
+
 
 
     function loadStats() {
@@ -367,6 +364,7 @@ function updateUI() {
       document.getElementById("checkBtn").disabled = false;
 
       document.getElementById("statsDisplay").style.display = "none";
+      setupAutocomplete();
       updateUI();
       updateScore();
     }
@@ -434,9 +432,11 @@ function updateUI() {
     }
 
     function updateScore() {
-      const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
-      document.getElementById("scoreDisplay").textContent = `Puntos: ${score}`;
-    }
+  const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
+  const lang = document.getElementById("lang").value;
+  document.getElementById("scoreDisplay").textContent = translations.score[lang] + score;
+}
+
 
     function setupAutocomplete() {
       const input = document.getElementById("capitalInput");
