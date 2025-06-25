@@ -108,6 +108,8 @@
 <body>
   <h1>🌍 Adivina la Capital - Europa</h1>
   <div class="score" id="scoreDisplay">Puntos: 0</div>
+  <div class="attempts" id="attemptsDisplay">Intentos restantes: 3</div>
+<div class="stats" id="statsDisplay"></div>
   <div>
     <label for="lang">Idioma:</label>
     <select id="lang">
@@ -130,6 +132,7 @@
 
   <script>
     let countries = [];
+    let attemptsLeft = 3;
     const translations = {
       prompt: { es: "¿Cuál es la capital de", en: "What's the capital of", de: "Wie heißt die Hauptstadt von", fr: "Quelle est la capitale de", it: "Qual è la capitale di", ca: "Quina és la capital de" },
       correct: { es: "✅ ¡Correcto!", en: "✅ Correct!", de: "✅ Richtig!", fr: "✅ Correct!", it: "✅ Corretto!", ca: "✅ Correcte!" },
@@ -170,8 +173,29 @@
       if (lang === "ca") return country.translations.spa?.common || country.name.common;
       return country.translations[lang]?.common || country.name.common;
     }
+    function updateAttempts() {
+  document.getElementById("attemptsDisplay").textContent = `Intentos restantes: ${attemptsLeft}`;
+}
 
-    function initGame() {
+function loadStats() {
+  return JSON.parse(localStorage.getItem("capitalAttemptsStats") || '{"1":0,"2":0,"3":0}');
+}
+
+function saveStats(stats) {
+  localStorage.setItem("capitalAttemptsStats", JSON.stringify(stats));
+}
+
+function updateStatsDisplay() {
+  const stats = loadStats();
+  document.getElementById("statsDisplay").innerHTML = `
+    <h3>Historial de aciertos</h3>
+    <p>Intento 1: ${stats["1"]}</p>
+    <p>Intento 2: ${stats["2"]}</p>
+    <p>Intento 3: ${stats["3"]}</p>
+  `;
+}
+
+   function initGame() {
   const lang = document.getElementById("lang").value;
   const country = getCountryOfTheDay();
 
@@ -183,39 +207,75 @@
   document.getElementById("checkBtn").textContent = translations.button[lang];
 
   document.title = titles[lang] || titles.en;
-  document.querySelector("h1").textContent = titles[lang] || titles.en; // 🔁 Aquí lo agregas
+  document.querySelector("h1").textContent = titles[lang] || titles.en;
 
   document.getElementById("result").textContent = "";
   document.getElementById("capitalInput").value = "";
+
+
+  attemptsLeft = 3;
+  updateAttempts();
+  updateStatsDisplay();
+  document.getElementById("capitalInput").disabled = false;
+  document.getElementById("checkBtn").disabled = false;
 
   updateScore();
 }
 
 
-    function checkAnswer() {
-      const lang = document.getElementById("lang").value;
-      const key = getTodayKey();
-      const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
 
-      if (history[key]) return;
+   function checkAnswer() {
+  const lang = document.getElementById("lang").value;
+  const key = getTodayKey();
+  const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
 
-      const country = getCountryOfTheDay();
-      const input = document.getElementById("capitalInput").value.trim().toLowerCase();
-      const correct = country.capital[0].toLowerCase();
-      const result = document.getElementById("result");
+  if (history[key]) return;
 
-      if (input === correct) {
-        result.textContent = translations.correct[lang];
-        result.style.color = "#4caf50";
-        addPoint();
-      } else {
-        result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
-        result.style.color = "#ef5350";
-      }
+  const country = getCountryOfTheDay();
+  const input = document.getElementById("capitalInput").value.trim().toLowerCase();
+  const correct = country.capital[0].toLowerCase();
+  const result = document.getElementById("result");
 
-      history[key] = true;
+  if (input === correct) {
+    result.textContent = translations.correct[lang];
+    result.style.color = "#4caf50";
+
+    
+    let stats = loadStats();
+    stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
+    saveStats(stats);
+    updateStatsDisplay();
+
+    history[key] = true; 
+    localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+
+    
+    document.getElementById("capitalInput").disabled = true;
+    document.getElementById("checkBtn").disabled = true;
+
+  } else {
+    attemptsLeft--;
+
+    if (attemptsLeft > 0) {
+      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)}. Intenta de nuevo.`;
+      result.style.color = "#ef5350";
+      updateAttempts();
+
+    } else {
+      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
+      result.style.color = "#ef5350";
+
+      history[key] = true; 
       localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+
+      updateAttempts();
+
+      
+      document.getElementById("capitalInput").disabled = true;
+      document.getElementById("checkBtn").disabled = true;
     }
+  }
+}
 
     function addPoint() {
       const score = parseInt(localStorage.getItem("capitalScore") || "0", 10) + 1;
