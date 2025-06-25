@@ -210,13 +210,16 @@
     }
 
     function updateStatsDisplay() {
-      const stats = loadStats();
-      document.getElementById("statsContent").innerHTML = `
-        <p>Intento 1: ${stats["1"]}</p>
-        <p>Intento 2: ${stats["2"]}</p>
-        <p>Intento 3: ${stats["3"]}</p>
-      `;
-    }
+  const stats = loadStats();
+  const lang = document.getElementById("lang").value;
+
+  document.getElementById("statsContent").innerHTML = `
+    <p>${translations.attempt1[lang]}: ${stats["1"] || 0}</p>
+    <p>${translations.attempt2[lang]}: ${stats["2"] || 0}</p>
+    <p>${translations.attempt3[lang]}: ${stats["3"] || 0}</p>
+  `;
+}
+
     const translations = {
   prompt: {
     es: "¿Cuál es la capital de",
@@ -477,7 +480,7 @@ function updateUI() {
 
     // Actualiza idioma al cambiar selección
     document.getElementById("lang").addEventListener("change", () => {
-      initGame();
+      updateUI();
     });
 
     loadCountries();
