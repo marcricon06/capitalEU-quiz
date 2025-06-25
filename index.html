@@ -184,10 +184,20 @@
     }
 
     function getCountryOfTheDay() {
-      const today = new Date();
-      const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-      return countries[dayOfYear % countries.length];
-    }
+  const today = new Date();
+  const dayKey = today.toISOString().split('T')[0]; // formato 'YYYY-MM-DD'
+
+  // Hash simple para convertir la fecha en un número
+  let hash = 0;
+  for (let i = 0; i < dayKey.length; i++) {
+    hash = (hash << 5) - hash + dayKey.charCodeAt(i);
+    hash |= 0; // convertir a entero 32 bits
+  }
+
+  const index = Math.abs(hash) % countries.length;
+  return countries[index];
+}
+
 
     function translateCountry(country, lang) {
       if (lang === "ca") return country.translations.spa?.common || country.name.common;
