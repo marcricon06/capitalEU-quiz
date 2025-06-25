@@ -79,37 +79,60 @@
       .flag { width: 90%; }
     }
     #suggestions {
-  max-width: 250px;
-  margin: 0 auto;
-  text-align: left;
-  background: #1e1e1e;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.suggestion {
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
-.suggestion:hover {
-  background: #333;
-}
-
+      max-width: 250px;
+      margin: 0 auto;
+      text-align: left;
+      background: #1e1e1e;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    .suggestion {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .suggestion:hover {
+      background: #333;
+    }
+    /* Estilos para el historial desplegable */
+    #statsDisplay {
+      display: none;
+      position: relative;
+      max-width: 300px;
+      margin: 1rem auto;
+      background: #222;
+      padding: 1rem 1.5rem 1.5rem 1.5rem;
+      border-radius: 8px;
+      color: #fff;
+      box-shadow: 0 0 10px #000;
+      text-align: left;
+    }
+    #closeStatsBtn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
   </style>
-  
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#121212" />
-
 </head>
 <body>
   <h1>🌍 Adivina la Capital - Europa</h1>
   <div class="score" id="scoreDisplay">Puntos: 0</div>
   <div class="attempts" id="attemptsDisplay">Intentos restantes: 3</div>
-<div class="stats" id="statsDisplay"></div>
+  <div class="stats" id="statsDisplay">
+    <button id="closeStatsBtn" title="Cerrar historial">✖</button>
+    <h3>Historial de aciertos</h3>
+    <div id="statsContent"></div>
+  </div>
   <div>
     <label for="lang">Idioma:</label>
     <select id="lang">
@@ -124,8 +147,8 @@
   <img id="flag" class="flag" src="" alt="Bandera de hoy" />
   <div>
     <p id="prompt"></p>
-    <input type="text" id="capitalInput" placeholder="" />
-    <div id="suggestions" style="position: relative; z-index: 10;"></div>
+    <input type="text" id="capitalInput" placeholder="" autocomplete="off"/>
+    <div id="suggestions"></div>
     <button id="checkBtn" onclick="checkAnswer()"></button>
   </div>
   <div class="result" id="result"></div>
@@ -133,6 +156,7 @@
   <script>
     let countries = [];
     let attemptsLeft = 3;
+
     const translations = {
       prompt: { es: "¿Cuál es la capital de", en: "What's the capital of", de: "Wie heißt die Hauptstadt von", fr: "Quelle est la capitale de", it: "Qual è la capitale di", ca: "Quina és la capital de" },
       correct: { es: "✅ ¡Correcto!", en: "✅ Correct!", de: "✅ Richtig!", fr: "✅ Correct!", it: "✅ Corretto!", ca: "✅ Correcte!" },
@@ -140,23 +164,23 @@
       placeholder: { es: "Escribe la capital", en: "Enter the capital", de: "Gib die Hauptstadt ein", fr: "Entrez la capitale", it: "Inserisci la capitale", ca: "Escriu la capital" },
       button: { es: "Comprobar", en: "Check", de: "Prüfen", fr: "Vérifier", it: "Verifica", ca: "Comprova" }
     };
+
     const titles = {
-  es: "🌍 Adivina la Capital de Europa",
-  en: "🌍 Guess the Capital of Europe",
-  de: "🌍 Errate die Hauptstadt Europas",
-  fr: "🌍 Devinez la capitale de l'Europe",
-  it: "🌍 Indovina la capitale d'Europa",
-  ca: "🌍 Endevina la capital d'Europa"
-};
+      es: "🌍 Adivina la Capital de Europa",
+      en: "🌍 Guess the Capital of Europe",
+      de: "🌍 Errate die Hauptstadt Europas",
+      fr: "🌍 Devinez la capitale de l'Europe",
+      it: "🌍 Indovina la capitale d'Europa",
+      ca: "🌍 Endevina la capital d'Europa"
+    };
 
-   async function loadCountries() {
-  const res = await fetch("https://restcountries.com/v3.1/region/europe");
-  const data = await res.json();
-  countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
-  initGame();
-  setupAutocomplete(); 
-}
-
+    async function loadCountries() {
+      const res = await fetch("https://restcountries.com/v3.1/region/europe");
+      const data = await res.json();
+      countries = data.filter(c => c.capital && c.capital.length > 0 && c.flags && c.flags.svg && c.translations);
+      initGame();
+      setupAutocomplete(); 
+    }
 
     function getTodayKey() {
       const today = new Date();
@@ -173,109 +197,111 @@
       if (lang === "ca") return country.translations.spa?.common || country.name.common;
       return country.translations[lang]?.common || country.name.common;
     }
+
     function updateAttempts() {
-  document.getElementById("attemptsDisplay").textContent = `Intentos restantes: ${attemptsLeft}`;
-}
-
-function loadStats() {
-  return JSON.parse(localStorage.getItem("capitalAttemptsStats") || '{"1":0,"2":0,"3":0}');
-}
-
-function saveStats(stats) {
-  localStorage.setItem("capitalAttemptsStats", JSON.stringify(stats));
-}
-
-function updateStatsDisplay() {
-  const stats = loadStats();
-  document.getElementById("statsDisplay").innerHTML = `
-    <h3>Historial de aciertos</h3>
-    <p>Intento 1: ${stats["1"]}</p>
-    <p>Intento 2: ${stats["2"]}</p>
-    <p>Intento 3: ${stats["3"]}</p>
-  `;
-}
-
-   function initGame() {
-  const lang = document.getElementById("lang").value;
-  const country = getCountryOfTheDay();
-
-  document.getElementById("flag").src = country.flags.svg;
-  document.getElementById("flag").alt = `Bandera de ${country.name.common}`;
-
-  document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
-  document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
-  document.getElementById("checkBtn").textContent = translations.button[lang];
-
-  document.title = titles[lang] || titles.en;
-  document.querySelector("h1").textContent = titles[lang] || titles.en;
-
-  document.getElementById("result").textContent = "";
-  document.getElementById("capitalInput").value = "";
-
-
-  attemptsLeft = 3;
-  updateAttempts();
-  updateStatsDisplay();
-  document.getElementById("capitalInput").disabled = false;
-  document.getElementById("checkBtn").disabled = false;
-
-  updateScore();
-}
-
-
-
-   function checkAnswer() {
-  const lang = document.getElementById("lang").value;
-  const key = getTodayKey();
-  const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
-
-  if (history[key]) return;
-
-  const country = getCountryOfTheDay();
-  const input = document.getElementById("capitalInput").value.trim().toLowerCase();
-  const correct = country.capital[0].toLowerCase();
-  const result = document.getElementById("result");
-
-  if (input === correct) {
-    result.textContent = translations.correct[lang];
-    result.style.color = "#4caf50";
-    addPoint();
-    
-    let stats = loadStats();
-    stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
-    saveStats(stats);
-    updateStatsDisplay();
-
-    history[key] = true; 
-    localStorage.setItem("capitalGameHistory", JSON.stringify(history));
-
-    
-    document.getElementById("capitalInput").disabled = true;
-    document.getElementById("checkBtn").disabled = true;
-
-  } else {
-    attemptsLeft--;
-
-    if (attemptsLeft > 0) {
-      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)}. Intenta de nuevo.`;
-      result.style.color = "#ef5350";
-      updateAttempts();
-
-    } else {
-      result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
-      result.style.color = "#ef5350";
-
-      history[key] = true; 
-      localStorage.setItem("capitalGameHistory", JSON.stringify(history));
-
-      updateAttempts();
-
-      
-      document.getElementById("capitalInput").disabled = true;
-      document.getElementById("checkBtn").disabled = true;
+      document.getElementById("attemptsDisplay").textContent = `Intentos restantes: ${attemptsLeft}`;
     }
-  }
-}
+
+    function loadStats() {
+      return JSON.parse(localStorage.getItem("capitalAttemptsStats") || '{"1":0,"2":0,"3":0}');
+    }
+
+    function saveStats(stats) {
+      localStorage.setItem("capitalAttemptsStats", JSON.stringify(stats));
+    }
+
+    function updateStatsDisplay() {
+      const stats = loadStats();
+      document.getElementById("statsContent").innerHTML = `
+        <p>Intento 1: ${stats["1"]}</p>
+        <p>Intento 2: ${stats["2"]}</p>
+        <p>Intento 3: ${stats["3"]}</p>
+      `;
+    }
+
+    function initGame() {
+      const lang = document.getElementById("lang").value;
+      const country = getCountryOfTheDay();
+
+      document.getElementById("flag").src = country.flags.svg;
+      document.getElementById("flag").alt = `Bandera de ${country.name.common}`;
+
+      document.getElementById("prompt").textContent = `${translations.prompt[lang]} ${translateCountry(country, lang)}?`;
+      document.getElementById("capitalInput").placeholder = translations.placeholder[lang];
+      document.getElementById("checkBtn").textContent = translations.button[lang];
+
+      document.title = titles[lang] || titles.en;
+      document.querySelector("h1").textContent = titles[lang] || titles.en;
+
+      document.getElementById("result").textContent = "";
+      document.getElementById("capitalInput").value = "";
+
+      attemptsLeft = 3;
+      updateAttempts();
+      updateStatsDisplay();
+      document.getElementById("capitalInput").disabled = false;
+      document.getElementById("checkBtn").disabled = false;
+
+      document.getElementById("statsDisplay").style.display = "none";
+
+      updateScore();
+    }
+
+    function checkAnswer() {
+      const lang = document.getElementById("lang").value;
+      const key = getTodayKey();
+      const history = JSON.parse(localStorage.getItem("capitalGameHistory") || "{}");
+
+      if (history[key]) return;
+
+      const country = getCountryOfTheDay();
+      const input = document.getElementById("capitalInput").value.trim().toLowerCase();
+      const correct = country.capital[0].toLowerCase();
+      const result = document.getElementById("result");
+
+      if (input === correct) {
+        result.textContent = translations.correct[lang];
+        result.style.color = "#4caf50";
+
+        let stats = loadStats();
+        stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
+        saveStats(stats);
+        updateStatsDisplay();
+
+        history[key] = true; 
+        localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+
+        document.getElementById("capitalInput").disabled = true;
+        document.getElementById("checkBtn").disabled = true;
+
+        document.getElementById("statsDisplay").style.display = "block";
+
+        addPoint();
+
+      } else {
+        attemptsLeft--;
+
+        if (attemptsLeft > 0) {
+          result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)}. Intenta de nuevo.`;
+          result.style.color = "#ef5350";
+          updateAttempts();
+
+        } else {
+          result.textContent = `${translations.incorrect[lang]} ${translateCountry(country, lang)} es ${country.capital[0]}.`;
+          result.style.color = "#ef5350";
+
+          history[key] = true; 
+          localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+
+          updateAttempts();
+
+          document.getElementById("capitalInput").disabled = true;
+          document.getElementById("checkBtn").disabled = true;
+
+          document.getElementById("statsDisplay").style.display = "block";
+        }
+      }
+    }
 
     function addPoint() {
       const score = parseInt(localStorage.getItem("capitalScore") || "0", 10) + 1;
@@ -287,51 +313,50 @@ function updateStatsDisplay() {
       const score = parseInt(localStorage.getItem("capitalScore") || "0", 10);
       document.getElementById("scoreDisplay").textContent = `Puntos: ${score}`;
     }
+
     function setupAutocomplete() {
-  const input = document.getElementById("capitalInput");
-  const suggestionBox = document.getElementById("suggestions");
+      const input = document.getElementById("capitalInput");
+      const suggestionBox = document.getElementById("suggestions");
 
-  input.addEventListener("input", () => {
-    const query = input.value.toLowerCase();
-    suggestionBox.innerHTML = "";
-
-    if (!query) return;
-
-    const matches = countries
-      .map(c => c.capital[0])
-      .filter(cap => cap.toLowerCase().startsWith(query))
-      .slice(0, 5); 
-
-    matches.forEach(cap => {
-      const div = document.createElement("div");
-      div.className = "suggestion";
-      div.textContent = cap;
-      div.addEventListener("click", () => {
-        input.value = cap;
+      input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
         suggestionBox.innerHTML = "";
+
+        if (!query) return;
+
+        const matches = countries
+          .map(c => c.capital[0])
+          .filter(cap => cap.toLowerCase().startsWith(query))
+          .slice(0, 5); 
+
+        matches.forEach(cap => {
+          const div = document.createElement("div");
+          div.className = "suggestion";
+          div.textContent = cap;
+          div.addEventListener("click", () => {
+            input.value = cap;
+            suggestionBox.innerHTML = "";
+          });
+          suggestionBox.appendChild(div);
+        });
       });
-      suggestionBox.appendChild(div);
-    });
-  });
 
-  document.addEventListener("click", e => {
-    if (!suggestionBox.contains(e.target) && e.target !== input) {
-      suggestionBox.innerHTML = "";
+      document.addEventListener("click", e => {
+        if (e.target !== input) suggestionBox.innerHTML = "";
+      });
     }
-  });
-}
 
-    document.getElementById("lang").addEventListener("change", initGame);
-    window.onload = loadCountries;
-  </script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registrado', reg))
-        .catch(err => console.log('Error registrando Service Worker', err));
+    // Evento para cerrar el historial
+    document.getElementById("closeStatsBtn").addEventListener("click", () => {
+      document.getElementById("statsDisplay").style.display = "none";
     });
-  }
+
+    // Actualiza idioma al cambiar selección
+    document.getElementById("lang").addEventListener("change", () => {
+      initGame();
+    });
+
+    loadCountries();
   </script>
 </body>
 </html>
