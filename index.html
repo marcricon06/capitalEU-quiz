@@ -402,23 +402,30 @@ function updateUI() {
   const correct = country.capital[0].toLowerCase();
 
   if (input === correct) {
-    result.textContent = translations.correct[lang];
-    result.style.color = "#4caf50";
+  result.textContent = translations.correct[lang];
+  result.style.color = "#4caf50";
 
-    let stats = loadStats();
-    stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
-    saveStats(stats);
-    updateStatsDisplay();
+  confetti({  // 🎉 Añadimos confeti aquí
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 },
+  });
 
-    history[key] = true;
-    localStorage.setItem("capitalGameHistory", JSON.stringify(history));
+  let stats = loadStats();
+  stats[4 - attemptsLeft] = (stats[4 - attemptsLeft] || 0) + 1;
+  saveStats(stats);
+  updateStatsDisplay();
 
-    document.getElementById("capitalInput").disabled = true;
-    document.getElementById("checkBtn").disabled = true;
+  history[key] = true;
+  localStorage.setItem("capitalGameHistory", JSON.stringify(history));
 
-    document.getElementById("statsDisplay").style.display = "block";
+  document.getElementById("capitalInput").disabled = true;
+  document.getElementById("checkBtn").disabled = true;
 
-    addPoint();
+  document.getElementById("statsDisplay").style.display = "block";
+
+  addPoint();
+}
 
   } else {
     attemptsLeft--;
@@ -556,6 +563,8 @@ function updateUI() {
 }
 
     loadCountries();
+    
   </script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
